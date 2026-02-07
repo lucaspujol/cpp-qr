@@ -1,6 +1,8 @@
 #include <iostream>
+#include "QRCode.hpp"
 
 int main() {
-    std::cout << "cppqr" << std::endl;
+    QRCode qr("Hello, World!");
+    qr.generate();
     return 0;
 }
