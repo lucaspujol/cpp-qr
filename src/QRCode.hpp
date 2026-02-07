@@ -26,26 +26,29 @@ enum class CorrectionLevel {
 
 class QRCode {
     public:
-        QRCode(const std::string &src, CorrectionLevel correctionLevel = CorrectionLevel::M);
-        ~QRCode();
+        QRCode(std::string src, CorrectionLevel ec = CorrectionLevel::M);
+        ~QRCode() = default;
 
         void generate();
         void save(const std::string &filepath);
 
-        EncodingMode identifyEncodingMode() const;
-        int getVersion() const;
-
-        std::string getData() const { return _src; }
+        EncodingMode mode() const noexcept   { return _mode; }
+        int version() const noexcept         { return _version; }
+        std::string data() const noexcept    { return _src; }
 
     private:
+        static constexpr std::string_view alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+        static EncodingMode selectMode(std::string_view string) noexcept;
+        static int selectVersion(
+            std::string_view string,
+            EncodingMode mode,
+            CorrectionLevel ec
+        );
+        static bool isNumeric(std::string_view string) noexcept;
+        static bool isAlphanumeric(std::string_view string) noexcept;
+
         std::string _src;
-        CorrectionLevel _correctionLevel;
-        
+        CorrectionLevel _ec;
         EncodingMode _mode;
-        std::string EncodingModeToString(EncodingMode mode) const;
-        bool isNumeric(const std::string &string) const;
-        bool isAlphanumeric(const std::string &string) const;
-        const std::string_view alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
-        
         int _version;
 };
