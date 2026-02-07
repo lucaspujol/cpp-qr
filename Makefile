@@ -1,7 +1,8 @@
 CXX			=	g++
 CXXFLAGS	=	-std=c++17 -Wall -Wextra
 SRCS		=	$(shell find . -name "*.cpp")
-OBJS		=	$(SRCS:.cpp=.o)
+OBJDIR		=	obj
+OBJS		=	$(patsubst %.cpp,$(OBJDIR)/%.o,$(SRCS))
 NAME		=	cppqr
 EXEC		=	$(NAME).out
 
@@ -10,7 +11,8 @@ all: $(EXEC)
 $(EXEC): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
