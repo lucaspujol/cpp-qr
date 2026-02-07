@@ -26,7 +26,7 @@ enum class CorrectionLevel {
 
 class QRCode {
     public:
-        QRCode(std::string src, CorrectionLevel ec = CorrectionLevel::M);
+        QRCode(std::string data, CorrectionLevel ec = CorrectionLevel::M);
         ~QRCode() = default;
 
         void generate();
@@ -34,7 +34,7 @@ class QRCode {
 
         EncodingMode mode() const noexcept   { return _mode; }
         int version() const noexcept         { return _version; }
-        std::string data() const noexcept    { return _src; }
+        std::string data() const noexcept    { return _data; }
 
     private:
         static constexpr std::string_view alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
@@ -47,8 +47,9 @@ class QRCode {
         static bool isNumeric(std::string_view string) noexcept;
         static bool isAlphanumeric(std::string_view string) noexcept;
 
-        std::string _src;
+        std::string _data;
         CorrectionLevel _ec;
         EncodingMode _mode;
         int _version;
+        std::string _bits;
 };

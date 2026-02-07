@@ -3,14 +3,14 @@
 #include <algorithm>
 #include "QRCodeTables.hpp"
 
-QRCode::QRCode(std::string src, CorrectionLevel ec)
-: _src(std::move(src)), _ec(ec) {
-    _mode = selectMode(_src);
-    _version = selectVersion(_src, _mode, _ec);
+QRCode::QRCode(std::string data, CorrectionLevel ec)
+: _data(std::move(data)), _ec(ec) {
+    _mode = selectMode(_data);
+    _version = selectVersion(_data, _mode, _ec);
 }
 
 void QRCode::generate() {
-    std::cout << "generating qrcode for: " << _src << std::endl;
+    std::cout << "generating qrcode for: " << _data << std::endl;
     if (_version == -1)
         std::cerr << "Error: Input data exceeds maximum capacity for any QR code version." << std::endl;
     else
