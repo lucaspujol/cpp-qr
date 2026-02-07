@@ -40,7 +40,7 @@ int QRCode::getVersion() const {
             return version + 1;
         }
     }
-    return -1; // Not enough capacity for the given input
+    return -1;
 }
 
 bool QRCode::isAlphanumeric(const std::string &string) const {
