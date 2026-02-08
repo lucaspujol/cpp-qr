@@ -15,16 +15,32 @@ QRCode::QRCode(std::string data, CorrectionLevel ec)
 
 void QRCode::generate() {
     std::cout << "generating qrcode for: " << _data << std::endl;
-    if (_version == -1)
+    if (!isValid()) {
         std::cerr << "Error: Input data exceeds maximum capacity for any QR code version." << std::endl;
-    else
-        std::cout << "selected version: " << _version << std::endl;
-    std::cout << "encoded bits: " << _bits << std::endl;
-    errorCorrectionCoding();
+        return;
+    }
     
+    std::cout << "selected version: " << _version << std::endl;
+    std::cout << "encoded bits: " << _bits << std::endl;
+    
+    _ecResult = errorCorrectionCoding();
+    std::cout << "Data blocks: " << _ecResult.dataBlocks.size() << std::endl;
+    std::cout << "EC blocks: " << _ecResult.ecBlocks.size() << std::endl;
+    
+    if (!_ecResult.ecBlocks.empty()) {
+        std::cout << "Error Correction Codewords for first block: ";
+        for (uint8_t codeword : _ecResult.ecBlocks[0]) {
+            std::cout << static_cast<int>(codeword) << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 void QRCode::save(const std::string &filepath) {
+    if (!isValid()) {
+        std::cerr << "Error: Cannot save invalid QR code" << std::endl;
+        return;
+    }
     std::cout << "saving qrcode into: " << filepath << std::endl;
 }
 
@@ -166,7 +182,7 @@ std::string QRCode::encodeData() {
     return encoded;
 }
 
-void QRCode::errorCorrectionCoding() {
+QRCode::ECResult QRCode::errorCorrectionCoding() {
     std::vector<uint8_t> dataCodewords;
 
     for (size_t i = 0; i < _bits.size(); i += 8) {
@@ -177,7 +193,7 @@ void QRCode::errorCorrectionCoding() {
 
     const ECBlockInfo &blockInfo = EC_TABLE[_version - 1][static_cast<int>(_ec)];
 
-    std::vector<std::vector<uint8_t>> blocks;
+    std::vector<std::vector<uint8_t>> dataBlocks;
     size_t offset = 0;
 
     for (size_t i = 0; i < blockInfo.group1_blocks; i++) {
@@ -185,7 +201,7 @@ void QRCode::errorCorrectionCoding() {
             dataCodewords.begin() + offset,
             dataCodewords.begin() + offset + blockInfo.group1_data_codewords
         );
-        blocks.push_back(block);
+        dataBlocks.push_back(block);
         offset += blockInfo.group1_data_codewords;
     }
 
@@ -194,25 +210,18 @@ void QRCode::errorCorrectionCoding() {
             dataCodewords.begin() + offset,
             dataCodewords.begin() + offset + blockInfo.group2_data_codewords
         );
-        blocks.push_back(block);
+        dataBlocks.push_back(block);
         offset += blockInfo.group2_data_codewords;
     }
 
     std::vector<uint8_t> generator = buildGeneratorPolynomial(blockInfo.ec_codewords_per_block);
     std::vector<std::vector<uint8_t>> ecBlocks;
 
-    for (const auto &block : blocks) {
+    for (const auto &block : dataBlocks) {
         ecBlocks.push_back(generateECCodewords(block, generator));
     }
 
-    if (!ecBlocks.empty()) {
-        std::cout << "Error Correction Codewords for first block: ";
-        for (uint8_t codeword : ecBlocks[0]) {
-            std::cout << static_cast<int>(codeword) << " ";
-        }
-        std::cout << std::endl;
-    }
-
+    return ECResult{dataBlocks, ecBlocks};
 }
 
 uint8_t QRCode::gf256Multiply(uint8_t a, uint8_t b) {

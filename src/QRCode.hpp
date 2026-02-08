@@ -35,12 +35,18 @@ class QRCode {
         void generate();
         void save(const std::string &filepath);
 
+        bool isValid() const noexcept        { return _version != -1; }
         EncodingMode mode() const noexcept   { return _mode; }
         int version() const noexcept         { return _version; }
         std::string data() const noexcept    { return _data; }
         std::string bits() const noexcept    { return _bits; }
 
     private:
+        struct ECResult {
+            std::vector<std::vector<uint8_t>> dataBlocks;
+            std::vector<std::vector<uint8_t>> ecBlocks;
+        };
+
         static constexpr std::string_view alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
         static EncodingMode selectMode(std::string_view string) noexcept;
         static int selectVersion(
@@ -49,7 +55,7 @@ class QRCode {
             CorrectionLevel ec
         );
         std::string encodeData();
-        void errorCorrectionCoding();
+        ECResult errorCorrectionCoding();
         uint8_t gf256Multiply(uint8_t a, uint8_t b);
         std::vector<uint8_t> buildGeneratorPolynomial(int n);
         std::vector<uint8_t> generateECCodewords(
@@ -76,4 +82,5 @@ class QRCode {
         EncodingMode _mode;
         int _version;
         std::string _bits;
+        ECResult _ecResult;
 };
