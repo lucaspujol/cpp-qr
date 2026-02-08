@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 enum class EncodingMode {
     Numeric,
@@ -44,8 +45,19 @@ class QRCode {
             EncodingMode mode,
             CorrectionLevel ec
         );
+        std::string encodeData();
+        void addModePrefix(std::string &encoded);
+        void addCharCountIndicator(std::string &encoded);
+        void addEncodedData(std::string &encoded);
+
+        void encodeBinaryData(std::string &encoded);
+
+        void encodeAlphanumericData(std::string &encoded);
+        void encodeNumericData(std::string &encoded);
+
         static bool isNumeric(std::string_view string) noexcept;
         static bool isAlphanumeric(std::string_view string) noexcept;
+        static int getCharCountBits(int version, EncodingMode mode);
 
         std::string _data;
         CorrectionLevel _ec;
