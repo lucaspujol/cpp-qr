@@ -2,6 +2,8 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
+#include <cstdint>
 
 enum class EncodingMode {
     Numeric,
@@ -36,6 +38,7 @@ class QRCode {
         EncodingMode mode() const noexcept   { return _mode; }
         int version() const noexcept         { return _version; }
         std::string data() const noexcept    { return _data; }
+        std::string bits() const noexcept    { return _bits; }
 
     private:
         static constexpr std::string_view alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
@@ -46,6 +49,15 @@ class QRCode {
             CorrectionLevel ec
         );
         std::string encodeData();
+        void errorCorrectionCoding();
+        uint8_t gf256Multiply(uint8_t a, uint8_t b);
+        std::vector<uint8_t> buildGeneratorPolynomial(int n);
+        std::vector<uint8_t> generateECCodewords(
+            const std::vector<uint8_t> &dataCodewords,
+            const std::vector<uint8_t> &generator
+        );
+
+
         void addModePrefix(std::string &encoded);
         void addCharCountIndicator(std::string &encoded);
         void addEncodedData(std::string &encoded);
