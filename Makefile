@@ -41,8 +41,6 @@ test: $(TEST_OBJS) $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(TESTFLAGS) -o tests/$(TEST_EXEC)
 
 run:
-	@make -sj all
-	@make -s clean
 	@./$(EXEC)
 
 .PHONY: all clean fclean re run test
