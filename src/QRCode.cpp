@@ -106,8 +106,7 @@ void QRCode::addEncodedData(std::string &encoded) {
 
 void QRCode::encodeBinaryData(std::string &encoded)
 {
-    for (char c : _data)
-    {
+    for (char c : _data) {
         std::string binary = std::bitset<8>(c).to_string();
         encoded += binary;
     }
@@ -154,10 +153,42 @@ void QRCode::encodeNumericData(std::string &encoded) {
 
 std::string QRCode::encodeData() {
     std::string encoded;
-
+    
     addModePrefix(encoded);
     addCharCountIndicator(encoded);
     addEncodedData(encoded);
+    addPadding(encoded);
 
     return encoded;
+}
+
+void QRCode::addPadding(std::string &encoded)
+{
+    int totalDataBytes = EC_TABLE[_version - 1][static_cast<int>(_ec)].total_data_codewords;
+    int requiredBits = totalDataBytes * 8;
+    int diff = requiredBits - encoded.size();
+
+    if (diff > 4) {
+        encoded += "0000";
+        diff -= 4;
+    } else if (diff > 0) {
+        encoded += std::string(diff, '0');
+        diff = 0;
+    }
+
+    if (encoded.size() % 8 != 0) {
+        int paddingBits = 8 - (encoded.size() % 8);
+        encoded += std::string(paddingBits, '0');
+        diff -= paddingBits;
+    }
+
+    if (diff > 0) {
+        std::string padBytes[] = {"11101100", "00010001"};
+        int padIndex = 0;
+        while (diff > 0) {
+            encoded += padBytes[padIndex];
+            padIndex = (padIndex + 1) % 2;
+            diff -= 8;
+        }
+    }
 }

@@ -49,9 +49,9 @@ class QRCode {
         void addModePrefix(std::string &encoded);
         void addCharCountIndicator(std::string &encoded);
         void addEncodedData(std::string &encoded);
+        void addPadding(std::string &encoded);
 
         void encodeBinaryData(std::string &encoded);
-
         void encodeAlphanumericData(std::string &encoded);
         void encodeNumericData(std::string &encoded);
 
