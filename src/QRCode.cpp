@@ -34,6 +34,9 @@ void QRCode::generate() {
         }
         std::cout << std::endl;
     }
+    _finalMessage = structureFinalMessage(_ecResult);
+
+    std::cout << "Final message (" << _finalMessage.size() << " bits): " << _finalMessage << std::endl;
 }
 
 void QRCode::save(const std::string &filepath) {
@@ -262,7 +265,40 @@ std::vector<uint8_t> QRCode::generateECCodewords(
     return std::vector<uint8_t>(working.end() - ecCount, working.end());
 }
 
+std::string QRCode::structureFinalMessage(const ECResult &ecResult) {
+    std::vector<uint8_t> finalMessage;
+    size_t maxDataBlocks = 0;
 
+    for (const auto &block : ecResult.dataBlocks) {
+        if (maxDataBlocks < block.size()) {
+            maxDataBlocks = block.size();
+        }
+    }
+    for (size_t i = 0; i < maxDataBlocks; i++) {
+        for (const auto &block : ecResult.dataBlocks) {
+            if (i < block.size()) {
+                finalMessage.push_back(block[i]);
+            } 
+        }
+    }
+    for (size_t i = 0; i < ecResult.ecBlocks[0].size(); i++) {
+        for (const auto &block : ecResult.ecBlocks) {
+            if (i < block.size()) {
+                finalMessage.push_back(block[i]);
+            }
+        }
+    }
+
+    std::string bitString;
+    for (uint8_t byte : finalMessage) {
+        bitString += std::bitset<8>(byte).to_string();
+    }
+
+    int remainder = REMAINDER_BITS[_version - 1];
+    bitString += std::string(remainder, '0');
+
+    return bitString;
+}
 
 void QRCode::addPadding(std::string &encoded)
 {

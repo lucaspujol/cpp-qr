@@ -39,7 +39,12 @@ class QRCode {
         EncodingMode mode() const noexcept   { return _mode; }
         int version() const noexcept         { return _version; }
         std::string data() const noexcept    { return _data; }
-        std::string bits() const noexcept    { return _bits; }
+        std::string bits() const noexcept                                    { return _bits; }
+        std::string finalMessage() const noexcept                            { return _finalMessage; }
+        int dataBlockCount() const noexcept                                  { return _ecResult.dataBlocks.size(); }
+        int ecBlockCount() const noexcept                                    { return _ecResult.ecBlocks.size(); }
+        std::vector<uint8_t> ecBlock(int i) const noexcept                  { return _ecResult.ecBlocks[i]; }
+        std::vector<uint8_t> dataBlock(int i) const noexcept                { return _ecResult.dataBlocks[i]; }
 
     private:
         struct ECResult {
@@ -48,6 +53,14 @@ class QRCode {
         };
 
         static constexpr std::string_view alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+        static constexpr int REMAINDER_BITS[40] = {
+            0, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0,  // versions 1-13
+            3, 3, 3, 3, 3, 3, 3,                    // versions 14-20
+            4, 4, 4, 4, 4, 4, 4,                    // versions 21-27
+            3, 3, 3, 3, 3, 3, 3,                    // versions 28-34
+            0, 0, 0, 0, 0, 0                        // versions 35-40
+        };
+
         static EncodingMode selectMode(std::string_view string) noexcept;
         static int selectVersion(
             std::string_view string,
@@ -62,7 +75,7 @@ class QRCode {
             const std::vector<uint8_t> &dataCodewords,
             const std::vector<uint8_t> &generator
         );
-
+        std::string structureFinalMessage(const ECResult &ecResult);
 
         void addModePrefix(std::string &encoded);
         void addCharCountIndicator(std::string &encoded);
@@ -83,4 +96,5 @@ class QRCode {
         int _version;
         std::string _bits;
         ECResult _ecResult;
+        std::string _finalMessage;
 };
