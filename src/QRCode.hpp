@@ -93,6 +93,15 @@ class QRCode {
 
         Matrix buildMatrix();
 
+        // finder pattern, separators, timing pattern, alignment pattern, dark module
+
+        void placeFinderPattern(Matrix &m, int row, int col);
+        void placeSeparators(Matrix &m, int size);
+        void placeTimingPatterns(Matrix &m, int size);
+        void placeAlignmentPatterns(Matrix &m);
+        void placeDarkModule(Matrix &m);
+        void reserveFormatInfo(Matrix &m, int size);
+
         // fields
 
         std::string     _data;
