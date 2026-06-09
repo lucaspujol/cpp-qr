@@ -18,11 +18,3 @@ void QRCode::generate() {
     _finalMessage = structureFinalMessage(_ecResult);
     _matrix = buildMatrix();
 }
-
-void QRCode::save(const std::string &filepath) {
-    if (!isValid()) {
-        std::cerr << "Error: Cannot save invalid QR code" << std::endl;
-        return;
-    }
-    std::cout << "saving qrcode into: " << filepath << std::endl;
-}

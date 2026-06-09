@@ -1,5 +1,5 @@
 CXX			=	g++
-CXXFLAGS	=	-std=c++17 -Wall -Wextra
+CXXFLAGS	=	-std=c++17 -Wall -Wextra -isystem vendor
 TESTFLAGS	=	-g3 -lcriterion
 
 SRCS		=	$(shell find src -name "*.cpp" ! -name "main.cpp")
