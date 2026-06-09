@@ -11,8 +11,8 @@ MAIN		=	src/main.cpp
 
 NAME		=	cppqr
 TEST_NAME	=	test_cppqr
-EXEC		=	$(NAME).out
-TEST_EXEC	=	$(TEST_NAME).out
+EXEC		=	$(NAME)
+TEST_EXEC	=	$(TEST_NAME)
 
 all: $(EXEC)
 
