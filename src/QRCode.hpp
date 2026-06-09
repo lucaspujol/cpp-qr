@@ -93,7 +93,7 @@ class QRCode {
 
         Matrix buildMatrix();
 
-        // finder pattern, separators, timing pattern, alignment pattern, dark module
+        // matrix generation steps
 
         void placeFinderPattern(Matrix &m, int row, int col);
         void placeSeparators(Matrix &m, int size);
@@ -101,10 +101,21 @@ class QRCode {
         void placeAlignmentPatterns(Matrix &m);
         void placeDarkModule(Matrix &m);
         void reserveFormatInfo(Matrix &m, int size);
-
-        // place data
-
         void placeData(Matrix &m);
+
+        // format info
+
+        void placeFormatInfo(Matrix &m);
+
+        // masking
+
+        Matrix applyMask(const Matrix &m, int maskPattern);
+        int    scoreMask(const Matrix &m);
+        int    scoreRule1(const Matrix &m, int size);
+        int    scoreRule2(const Matrix &m, int size);
+        int    scoreRule3(const Matrix &m, int size);
+        int    scoreRule4(const Matrix &m, int size);
+        int    chooseMask(Matrix &m);
 
         // fields
 
@@ -112,6 +123,7 @@ class QRCode {
         CorrectionLevel _ec;
         EncodingMode    _mode;
         int             _version;
+        int             _chosenMask = 0;
         std::string     _bits;
         ECResult        _ecResult;
         std::string     _finalMessage;
