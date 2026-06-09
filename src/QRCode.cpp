@@ -386,3 +386,32 @@ void QRCode::reserveFormatInfo(Matrix &m, int size) {
         if (_isFn[i][8] == -1) { m[i][8] = 0; _isFn[i][8] = 1; }
     }
 }
+
+// ============================================================================
+// place data
+// ============================================================================
+
+void QRCode::placeData(Matrix &m) {
+    int size = 4 * _version + 17;
+    int bitIndex = 0;
+    bool goingUp = true;
+
+    for (int right = size - 1; right >= 1; right -= 2) {
+        int col = right;
+        if (col == 6) col--; // skip vertical timing pattern
+
+        for (int i = 0; i < size; i++) {
+            int row = goingUp ? (size - 1 - i) : i;
+
+            if (_isFn[row][col] == -1 && bitIndex < static_cast<int>(_finalMessage.size())) {
+                m[row][col] = (_finalMessage[bitIndex] == '1') ? 1 : 0;
+                bitIndex++;
+            }
+            if (_isFn[row][col - 1] == -1 && bitIndex < static_cast<int>(_finalMessage.size())) {
+                m[row][col - 1] = (_finalMessage[bitIndex] == '1') ? 1 : 0;
+                bitIndex++;
+            }
+        }
+        goingUp = !goingUp;
+    }
+}

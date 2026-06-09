@@ -102,6 +102,10 @@ class QRCode {
         void placeDarkModule(Matrix &m);
         void reserveFormatInfo(Matrix &m, int size);
 
+        // place data
+
+        void placeData(Matrix &m);
+
         // fields
 
         std::string     _data;
