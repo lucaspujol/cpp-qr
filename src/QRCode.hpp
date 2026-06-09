@@ -11,18 +11,7 @@ enum class EncodingMode {
     Binary,
 };
 
-/**
- * Each correction level corresponds to a percentage of codewords
- * that can be restored:
- * - L: 7% 
- * - M: 15% 
- * - Q: 25% 
- * - H: 30% 
- * 
- * Be aware higher levels of error correction require more bytes,
- * so the higher the error correction level, the larger the QR code
- * will have to be.
- */
+// L=7%, M=15%, Q=25%, H=30% of codewords recoverable. Higher = larger QR.
 enum class CorrectionLevel {
     L, M, Q, H,
 };
@@ -35,39 +24,62 @@ class QRCode {
         void generate();
         void save(const std::string &filepath);
 
-        bool isValid() const noexcept        { return _version != -1; }
-        EncodingMode mode() const noexcept   { return _mode; }
-        int version() const noexcept         { return _version; }
-        std::string data() const noexcept    { return _data; }
-        std::string bits() const noexcept                                    { return _bits; }
-        std::string finalMessage() const noexcept                            { return _finalMessage; }
-        int dataBlockCount() const noexcept                                  { return _ecResult.dataBlocks.size(); }
-        int ecBlockCount() const noexcept                                    { return _ecResult.ecBlocks.size(); }
-        std::vector<uint8_t> ecBlock(int i) const noexcept                  { return _ecResult.ecBlocks[i]; }
-        std::vector<uint8_t> dataBlock(int i) const noexcept                { return _ecResult.dataBlocks[i]; }
+        // Getters
+        bool isValid() const noexcept         { return _version != -1; }
+        EncodingMode mode() const noexcept    { return _mode; }
+        int version() const noexcept          { return _version; }
+        std::string data() const noexcept     { return _data; }
+        std::string bits() const noexcept     { return _bits; }
+        std::string finalMessage() const noexcept { return _finalMessage; }
+        int dataBlockCount() const noexcept   { return _ecResult.dataBlocks.size(); }
+        int ecBlockCount() const noexcept     { return _ecResult.ecBlocks.size(); }
+        std::vector<uint8_t> ecBlock(int i) const noexcept   { return _ecResult.ecBlocks[i]; }
+        std::vector<uint8_t> dataBlock(int i) const noexcept { return _ecResult.dataBlocks[i]; }
 
     private:
+        // types
+
+        using Matrix = std::vector<std::vector<int8_t>>;
+
         struct ECResult {
             std::vector<std::vector<uint8_t>> dataBlocks;
             std::vector<std::vector<uint8_t>> ecBlocks;
         };
 
-        static constexpr std::string_view alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+        // constants
+
+        static constexpr std::string_view alphanumericChars =
+            "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+
         static constexpr int REMAINDER_BITS[40] = {
-            0, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0,  // versions 1-13
-            3, 3, 3, 3, 3, 3, 3,                    // versions 14-20
-            4, 4, 4, 4, 4, 4, 4,                    // versions 21-27
-            3, 3, 3, 3, 3, 3, 3,                    // versions 28-34
-            0, 0, 0, 0, 0, 0                        // versions 35-40
+            0, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0,
+            3, 3, 3, 3, 3, 3, 3,
+            4, 4, 4, 4, 4, 4, 4,
+            3, 3, 3, 3, 3, 3, 3,
+            0, 0, 0, 0, 0, 0
         };
 
+        // mode and version selection
+
         static EncodingMode selectMode(std::string_view string) noexcept;
-        static int selectVersion(
-            std::string_view string,
-            EncodingMode mode,
-            CorrectionLevel ec
-        );
+        static int selectVersion(std::string_view string, EncodingMode mode, CorrectionLevel ec);
+        static bool isNumeric(std::string_view string) noexcept;
+        static bool isAlphanumeric(std::string_view string) noexcept;
+
+        // data encoding
+
         std::string encodeData();
+        void addModePrefix(std::string &encoded);
+        void addCharCountIndicator(std::string &encoded);
+        void addEncodedData(std::string &encoded);
+        void addPadding(std::string &encoded);
+        void encodeBinaryData(std::string &encoded);
+        void encodeAlphanumericData(std::string &encoded);
+        void encodeNumericData(std::string &encoded);
+        static int getCharCountBits(int version, EncodingMode mode);
+
+        // error correction coding
+
         ECResult errorCorrectionCoding();
         uint8_t gf256Multiply(uint8_t a, uint8_t b);
         std::vector<uint8_t> buildGeneratorPolynomial(int n);
@@ -77,24 +89,19 @@ class QRCode {
         );
         std::string structureFinalMessage(const ECResult &ecResult);
 
-        void addModePrefix(std::string &encoded);
-        void addCharCountIndicator(std::string &encoded);
-        void addEncodedData(std::string &encoded);
-        void addPadding(std::string &encoded);
+        // matrix construction
 
-        void encodeBinaryData(std::string &encoded);
-        void encodeAlphanumericData(std::string &encoded);
-        void encodeNumericData(std::string &encoded);
+        Matrix buildMatrix();
 
-        static bool isNumeric(std::string_view string) noexcept;
-        static bool isAlphanumeric(std::string_view string) noexcept;
-        static int getCharCountBits(int version, EncodingMode mode);
+        // fields
 
-        std::string _data;
+        std::string     _data;
         CorrectionLevel _ec;
-        EncodingMode _mode;
-        int _version;
-        std::string _bits;
-        ECResult _ecResult;
-        std::string _finalMessage;
+        EncodingMode    _mode;
+        int             _version;
+        std::string     _bits;
+        ECResult        _ecResult;
+        std::string     _finalMessage;
+        Matrix          _matrix;
+        Matrix          _isFn;
 };
