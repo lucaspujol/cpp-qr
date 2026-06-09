@@ -36,9 +36,14 @@
 *.exe
 *.out
 *.app
+cppqr
+test_cppqr
 
 # debug information files
 *.dwo
 
 # vs code
 .vscode/
+
+# images
+*.png
